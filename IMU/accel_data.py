@@ -1,3 +1,21 @@
+""" Lector de acceleracion
+
+Este codigo se conecta por el bus de I2C del Raspberry PI modelo 2 al accelerometro LSM303.
+Lee la acceleracion en los 3 ejes escala la unidad de medida a gravedades y los imprime.  Luego calcula los
+angulos de Euler "Pitch" y "Roll"  los imprime en grados.
+
+El accelerometro se configuro como:
+- Velocidad de medicion = 10Hz
+- Modo Alta resolucion = ON
+- Data Uptade Hold = ON
+
+Formato del Resultado:  (D = dato, X = no usado (se queda en 0 siempre))
+
+High = [D D D D D D D D] : [D D D D X X X X] = Low
+       MSB                       LSB
+
+"""
+
 import smbus
 import time
 import math
