@@ -72,4 +72,3 @@ while(1):
     print("Angulos  Pitch: {0:0.1f}   Roll: {1:0.1f}".format(pitch,roll))
     time.sleep(0.3) #Esperamos un poco antes de volver a medir
 
-
