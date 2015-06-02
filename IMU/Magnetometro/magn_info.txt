@@ -1,0 +1,64 @@
+Esta es la informacion del uso del magnetometro, junto con registros de importancia y formatos de salida.
+Por favor revise la nota sobre formatos de salida al final de este txt.
+
+Curiosamente, parece que el magnetometro si es de 16 bits, siempre.
+
+CRA_REG_M  (00h) =  TEMP_EN | 0 | 0 | DO[2:0] | 0 | 0  (Default = 00010000)
+
+D0[2:0] (Data rate) =   000    0.75 Hz
+                        001    1.5  Hz
+                        010    3    Hz
+                        011    7.5  Hz
+                        100    15   Hz
+                        101    30   Hz
+                        110    75   Hz
+                        111    220  Hz
+TEMP_EN = Temperature Sensor enable
+
+
+CRB_REG_M (01h) =  GN[2:0] | 0 | 0 | 0 | 0 | 0   (Default = 00100000)
+
+GN[2:0] (Gain Config) = 001    +-1.3 Gauss
+                        010    +-1.9 Gauss
+                        011    +-2.5 Gauss
+                        100    +-4.0 Gauss
+                        101    +-4.7 Gauss
+                        110    +-5.6 Gauss
+                        111    +-8.1 Gauss
+
+
+MR_REG_M (02h) =  | 0 | 0 | 0 | 0 | 0 | 0 | MD[1:0]    (Default = 00000011)
+
+MD  (Mode Select) = 00  Continuous conversion
+                    01  Single conversion
+                    10  Sleep mode
+                    11  Sleep mode
+
+
+                      H   :   L
+Output Reg =  X -->  03h  :  04h
+              Y -->  07h  :  08h
+              Z -->  05h  :  06h
+
+
+Configuracion:
+00h = 0x10 (15Hz)
+01h = 0b00100000 (la escala varia)
+02h = 0x00 (Continuous Conversion)
+
+
+###################################################################################################################3
+
+Nota: para todas las configuraciones usan 12bits y el resultado siempre esta entre  -2048 y 2047
+
+Formato del Resultado:  (D = dato, X = no usado)
+
+High = [x x x x D D D D] : [D D D D D D D D] = Low
+              MSB                 LSB
+
+El valor especial 11110000 00000000 (-4096) es el valor de overflow, si este valor aparece es que te fuiste del rango.
+
+Lo mas conveniente es tomar los 16bits completos para el algoritmo de complemento a 2, e ignorar el resultado cada vez
+que este lea -4096.
+
+##################################################################################################################

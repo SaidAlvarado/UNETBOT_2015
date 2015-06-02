@@ -1,0 +1,44 @@
+Esta es la salida del programa "accel_profiler.py". Aquí se puede ver el modo de funcionamiento del accelerometro
+para diferentes configuraciones de Escalas y Resoluciones, se incluye el formato y la cantidad de bits de
+la salida de cada modo, y el valor por el que tienes que dividir el registro de salida para obtener el resultado
+en gravedades.
+
+[+] Escala = +-2,  High Resolution = False
+   [*] Salida = 11111111 11000000
+   [*] Cantidad de bits = 10
+   [*] factor de escalamiento = 256
+
+[+] Escala = +-2,  High Resolution = True
+   [*] Salida = 11111111 11110000
+   [*] Cantidad de bits = 12
+   [*] factor de escalamiento = 1024
+
+[+] Escala = +-4,  High Resolution = False
+   [*] Salida = 11111111 11000000
+   [*] Cantidad de bits = 10
+   [*] factor de escalamiento = 128
+
+[+] Escala = +-4,  High Resolution = True
+   [*] Salida = 11111111 11110000
+   [*] Cantidad de bits = 12
+   [*] factor de escalamiento = 512
+
+[+] Escala = +-8,  High Resolution = False
+   [*] Salida = 11111111 11000000
+   [*] Cantidad de bits = 10
+   [*] factor de escalamiento = 64
+
+[+] Escala = +-8,  High Resolution = True
+   [*] Salida = 11111111 11110000
+   [*] Cantidad de bits = 12
+   [*] factor de escalamiento = 256
+
+[+] Escala = +-16,  High Resolution = False
+   [*] Salida = 11111111 11000000
+   [*] Cantidad de bits = 10
+   [*] factor de escalamiento = 32
+
+[+] Escala = +-16,  High Resolution = True
+   [*] Salida = 11111111 11110000
+   [*] Cantidad de bits = 12
+   [*] factor de escalamiento = 128
