@@ -1,14 +1,16 @@
 """ Generador del Archivo CSV de calibracion para el magnetometro
 
 Este codigo se conecta por el bus de I2C del Raspberry PI modelo 2 al magnetometro LSM303.
-Toma 500 mediciones (una cada 100ms) que se escriben en el archivo "magn_csv_data.csv" para despues ser analizado para
-calibrar correctamente el magnetometro.
+Toma un numero de mediciones definido en la linea de comandos (una cada 100ms) que se escriben en el archivo CSV nombrado en la linea de comando para
+despues ser analizado para calibrar correctamente el magnetometro.
+
 
 
 Configuracion:
 00h = 0x10 (15Hz)
 01h = 0b00100000 (la escala +-1.3Gauss)
 02h = 0x00 (Continuous Conversion)
+
 
 
 Nota: para todas las configuraciones usan 12bits y el resultado siempre esta entre  -2048 y 2047
@@ -18,11 +20,32 @@ High = [x x x x D D D D] : [D D D D D D D D] = Low
 
 El valor especial 11110000 00000000 (-4096) es el valor de overflow, si este valor aparece es que te fuiste del rango.
 
+
+
+Ejemplo de uso:
+python magn_csv_recorder.py prueba.csv 5000
+
 """
 
 import smbus
 import time
 import csv
+import sys
+
+#Parseamos los argumentos de la linea de comandos
+
+#Evitamos que falten argumentos
+if len(sys.argv) < 3:
+    print "Necesitas especificar (1) el nombre del archivo a guardar y (2) la cantidad de muestras"
+    exit()
+#Evitamos que el primer argumento no sean numeros
+if not sys.argv[2].isdigit():
+    print "'{}' no es un numero de muestras valido".format(sys.argv[2])
+    exit()
+#Evitamos que el archivo de escritura no sea un archivo .csv
+if ".csv" not in sys.argv[1]:
+    print "'{}' no es un nombre valido de archivo csv".format(sys.argv[1])
+    exit()
 
 
 magn = smbus.SMBus(1)      #inicializamos el puerto
@@ -38,13 +61,13 @@ magn.write_byte_data(magn_addr,0x02,0x00)         #Prendemos el magnetometro
 time.sleep(1)
 
 
-print("Iniciando la recoleccion de datos")
-f = open("magn_csv_data.csv",'wt')                      #Abrimos el archivo csv
+print('Iniciando la recoleccion de datos en "{}"'.format(sys.argv[2]))
+f = open(sys.argv[1],'wt')                      #Abrimos el archivo csv definido en la linea de comandos
 
 try:
     out_file =  csv.writer(f)
     out_file.writerow(('X','Y','Z'))                    #Escribimos el encabezado del archivo
-    for i in range(500):                                #definimos que se van a tomar 500 muestras
+    for i in range(int(sys.argv[2])):                   #definimos que se van a tomar las muestras definidas en la linea de commandos
 
         ##Sacamos los datos de campo magnetico de los 3 ejes
 
@@ -85,6 +108,7 @@ try:
 
     print('finalizado la recoleccion de datos')
 finally:
+    #Nos aseguramos de que si pasa algo, el archivo se cierre.
     f.close()
     print('proceso finalizado')
 

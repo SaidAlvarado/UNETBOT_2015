@@ -62,3 +62,24 @@ Lo mas conveniente es tomar los 16bits completos para el algoritmo de complement
 que este lea -4096.
 
 ##################################################################################################################
+
+
+
+
+########################################################################################################################
+#                                           Datos de calibracion                                                       #
+########################################################################################################################
+
+Estos datos de calibracion fueron sacados con el programa magn_csv_recorder.py y magn_calibrator.py tomando ~5000 muestras
+
+Hard Iron Offset calculated X = 35.0, Y = -35.0, Z = 3.0
+Soft Iron Offset calculated X = 1.0, Y = 1.02702702703, Z = 0.974358974359
+
+La ecuacion para calibrar es la siguiente:
+
+Dato_calibrado = (Dato_puro - Hard_iron_offset) * Soft_Iron_offset
+
+
+
+
+

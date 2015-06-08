@@ -1,14 +1,14 @@
 """ Calibrador del Magnetometro
 
-Este codigo lee el archivo "magn_csv_data.csv" que es un archivo csv con 500 valores enteros tomados del
+Este codigo lee el archivo CSV indicado en la linea de comandos que es un archivo con una cantidad indefinida de valores enteros tomados del
 magnetometro LSM303 en escala de +-1.3gauss.
 El codigo grafica el elipsoide que generan estos valores y saca las cuentas de offset y ganancia para normalizarla a una
-esfera, y regrafica el scatter plot. Para esto usamos numoy y matplotlib.
+esfera, y regrafica el scatter plot. Para esto usamos numpy y matplotlib.
 
 
 Para calibrar las medidas se usa la siguiente formula
 X = magn.readX()
-X_cal = (X - x_offset)/x_scale
+X_cal = (X - x_offset)*x_scale
 
 
 Formato del archivo CSV:
@@ -18,19 +18,35 @@ Formato del archivo CSV:
 ...
 'dataX500','dataY500','dataZ500'
 
+Ejemplo de uso:
+python magn_calibrator.py prueba.csv
+
 """
 import matplotlib
 matplotlib.use('Tkagg')
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+import sys
+import csv
+
+#Parseamos los argumentos de la linea de comandos
+
+#Evitamos que falten argumentos
+if len(sys.argv) < 2:
+    print "Necesitas especificar (1) el nombre del archivo a guardar y (2) la cantidad de muestras"
+    exit()
+#Evitamos que el archivo de escritura no sea un archivo .csv
+if ".csv" not in sys.argv[1]:
+    print "'{}' no es un nombre valido de archivo csv".format(sys.argv[1])
+    exit()
 
 
 #abrimos y leemos el archivo
-print("Abrimos el archivo 'magn_csv_data.csv'")
+print("Abrimos el archivo '{}'".format(sys.argv[1]))
 
 #Leemos los datos
-data = np.genfromtxt('magn_csv_data.csv', delimiter=',', names=True)   #Funcion de Numpy que te deja sacar datos de un archivo de texto (devuelve un diccionario de listas)
+data = np.genfromtxt(sys.argv[1], delimiter=',', names=True)   #Funcion de Numpy que te deja sacar datos de un archivo de texto (devuelve un diccionario de listas)
                                                                        #delimiter = que simbolo separa los valores de cada columna
                                                                        #names = True; saca los nombres de la columna del mismo archivo (alternativa; names=['x', 'y', 'z'])
 
@@ -86,14 +102,20 @@ print("Soft Iron Offset calculated X = {}, Y = {}, Z = {}".format(x_scale,y_scal
 
 
 #Procedemos a arreglar las medidas y regraficar.
-DataX_cal = map(lambda x: (x-x_offset)/x_scale, data['X'])
-DataY_cal = map(lambda x: (x-y_offset)/y_scale, data['Y'])
-DataZ_cal = map(lambda x: (x-z_offset)/z_scale, data['Z'])
+DataX_cal = map(lambda x: (x-x_offset)*x_scale, data['X'])
+DataY_cal = map(lambda x: (x-y_offset)*y_scale, data['Y'])
+DataZ_cal = map(lambda x: (x-z_offset)*z_scale, data['Z'])
 
-
+#Abrimos una segunda figura para graficar los puntos arreglados
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111, projection='3d')      #Generamos el Axes handler
 
+#Imprimimos unos resultados de comparacion, para saber que todo salio bien
+print("\nX -> pre = [{}, {}]    post = [{}, {}]".format(min(data['X']), max(data['X']), min(DataX_cal), max(DataX_cal)))
+print("Y -> pre = [{}, {}]    post = [{}, {}]".format(min(data['Y']), max(data['Y']), min(DataY_cal), max(DataY_cal)))
+print("Z -> pre = [{}, {}]    post = [{}, {}]".format(min(data['Z']), max(data['Z']), min(DataZ_cal), max(DataZ_cal)))
+
+#Graficamos los nuevos datos!
 ax2.scatter(DataX_cal, DataY_cal, DataZ_cal, c='r', marker='o')
 
 ax2.set_xlabel('X')
@@ -101,6 +123,27 @@ ax2.set_ylabel('Y')
 ax2.set_zlabel('Z')
 
 plt.show()
+
+
+#########################################################################################
+#                           Escribimos la salida en un archivo CSV                      #
+#########################################################################################
+
+
+#Ahora tenemos un pequeno codigo que escribe los resultados de la calibracion en otro archivo csv
+f = open(sys.argv[1][:-4] + '_calibrated.csv','wt')                  #Abrimos el archivo csv de salida
+try:
+    out_file =  csv.writer(f)
+    out_file.writerow(('X','Y','Z'))                    #Escribimos el encabezado del archivo
+    for i in range(len(DataX_cal)):
+        out_file.writerow(( str(DataX_cal[i]), str(DataY_cal[i]), str(DataZ_cal[i]) ))         #escribimos los datos calibrados
+    print('datos escritos!')
+finally:
+    #Nos aseguramos de que si pasa algo, el archivo se cierre.
+    f.close()
+
+
+
 
 
 
