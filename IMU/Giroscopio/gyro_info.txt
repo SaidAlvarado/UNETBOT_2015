@@ -1,0 +1,58 @@
+Esta es la informacion del uso del giroscopio, junto con registros de importancia y formatos de salida.
+La salida del giroscopio si es de 16bits
+
+
+CTRL1  (20h) =  DR[1:0] | BW[1:0] | PD | Zen | Yen | Xen  (Default = 00000111)
+
+DR y BW tienen una relacion muy compleja que se puede encontrar en la pagina 37 del datasheet.
+
+PD = 0 Apagado, 1 Encendido
+
+
+
+CTRL2 (21h) =  EXTRen | LVLen | HPM[1:0] | HPCF[3:0]    (Default = 00000000)
+
+HPM[1:0] (High Pass Filter Mode ) = 00      Normal Mode, reset reading
+                                    01      Reference signal for filtering
+                                    10      Normal Mode
+                                    11      Auto Reset on Interrupt
+
+HPCF[3:0] (High Pass Filter Cut-off Frecuency) = La tabla se puede encontrar en la pagina 38 del datasheet
+
+
+
+CTRL4 (23h) =  | BLU | BLE | FS[1:0] | IMPen | ST[2:1] | SIM    (Default = 00000000)
+
+BLU (BLock Data Update) = 0 apagado, 1 encendido
+
+FS  (Full Scale selection) = 00  245dps  (8.75 mdps/digit)
+                             01  500dps  (17.5 mdps/digit)
+                             1x  2000dps (70 mdps/digit)
+
+
+
+CTRL5 (24h) =  | BOOT | FIFO_EN | StopOnFTH | HPen | IG_Sel[1:0] | Out_Sel[1:0]    (Default = 00000000)
+
+HPen (High Pass Filter Enable) = 0 Disable, 1 Enable
+
+Out_Sel[1:0]  (Out Selection selection) = 00  ADC + LPF1
+                                          01  ADC + LPF1 + HPF1 (depende de HPen)
+                                          1x  ADC + LPF1 + HPF1 (depende de HPen) + LPF2
+
+
+
+LOW_ODR (39h) =  | -- | -- | DRDY_HL | 0 | I2C_dis | SW_RES | 0 | Low_ODR    (Default = 00000000)
+
+Low_ODR (Low Speed ODR) = 0 Disable, 1 Enable  (Afecta los valores de DR y BW de CTRl1 (20h)
+
+
+                      H   :   L
+Output Reg =  X -->  29h  :  28h
+              Y -->  2Bh  :  2Ah
+              Z -->  2Dh  :  2Ch
+
+
+Configuracion:
+20h = 0x8F (DataRate 400Hz, BW 20Hz, All Axis enabled, Gyro ON)
+23h = 0xA0 (Escala 2000dps, BlockUpdates )
+24h = 0x00 (OutSel = 10h, skip HPF, use LPF2)

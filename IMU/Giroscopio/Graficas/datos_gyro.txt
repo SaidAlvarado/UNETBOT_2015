@@ -1,0 +1,63 @@
+Recoleccion de datos del meedidor del Giroscopio
+
+1. Datos de Control: DR = 400Hz, BW = 110Hz, HPF y LPF bypaseado
+
+EjeX: Drift = (-2.8961 +-0.1285)dps     EjeY: Drift = (-6.6689 +-0.3295)dps     EjeZ: Drift = (0.6377 +-0.2115)dps
+      Angulo = -2.8989*t +0.0318              Angulo = -6.6724*t +0.0652              Angulo = 0.6360*t +-0.0164
+
+
+2. Prueba2:  DR = 400Hz, BW = 20Hz, HPF y LPF bypaseado
+
+EjeX: Drift = (-2.9547 +-0.1283)dps     EjeY: Drift = (-6.8463 +-0.3370)dps     EjeZ: Drift = (0.4300 +-3.6889)dps
+      Angulo = -2.9538*t +0.0141              Angulo = -6.8456*t +0.0329              Angulo = 0.4298*t +-0.0108
+
+
+3. Prueba3:   DR = 400Hz, BW = 20Hz, LPF activado
+
+EjeX: Drift = (-2.9614 +-0.1351)dps     EjeY: Drift = (-6.8421 +-0.1698)dps     EjeZ: Drift = (0.4439 +-0.5918)dps
+      Angulo = -2.9674*t +0.0617              Angulo = -6.8562*t +0.1553              Angulo = 0.4417*t +0.0009
+
+
+4. Prueba4:   DR = 200Hz, BW = 12.5Hz, LPF activado
+
+EjeX: Drift = (-2.9720 +-0.0484)dps     EjeY: Drift = (-6.8500 +-0.1212)dps     EjeZ: Drift = (0.4154 +-0.0908)dps
+      Angulo = -2.9696*t +-0.0204             Angulo = -6.8514*t +0.0228              Angulo = 0.4187*t +-0.0295
+
+(Arriba por algun motivo no hubieron picos de 17dps en el eje Z)
+
+
+5. Prueba5:  DR = 200Hz, BW = 12.5Hz, HPF y LPF bypaseado
+
+EjeX: Drift = (-2.9603 +-0.0983)dps     EjeY: Drift = (-6.8311 +-0.2401)dps     EjeZ: Drift = (0.4237 +-2.2990)dps
+      Angulo = -2.9614*t +0.0293              Angulo = -6.8314*t +0.0101              Angulo = 0.4280*t +-0.0335
+
+
+6. Prueba6: DR = 400Hz, BW = 20Hz, HPF (0.05Hz) y LPF activado
+
+EjeX: Drift = (-0.4946 +-6.4457)dps     EjeY: Drift = (-1.1952 +-6.3909)dps     EjeZ: Drift = (-0.3014 +-8.9815)dps
+      Angulo = -0.4112*t +-1.5517             Angulo = -0.9865*t +-4.0815             Angulo = -0.2442*t +-0.9760
+
+(Arriba la integracion ya no es una linea recta)
+
+
+7. Prueba7: DR = 200Hz, BW = 12.5Hz, HPF (0.05Hz) y LPF activado
+
+EjeX: Drift = (0.2115 +-2.3827)dps      EjeY: Drift = (-0.2375 +-4.1746)dps     EjeZ: Drift = (0.2137 +-3.5376)dps
+      Angulo = 0.1664*t +1.6544               Angulo = -0.1950*t +-1.3958             Angulo = 0.1697*t +1.6795
+
+
+8. Prueba8: DR = 200Hz, BW = 12.5Hz, HPF (0.05Hz) activado
+
+EjeX: Drift = (-0.0281 +-11.2008)dps    EjeY: Drift = (-0.0208 +-10.9105)dps    EjeZ: Drift = (-0.0313 +-11.0225)dps
+      Angulo = -0.0275*t +-0.1122             Angulo = 0.5663*t +-0.6914              Angulo = -0.0194*t +-0.1245
+
+(Esta medicion se fue a la *****, no usar)
+
+9. Prueba9: DR = 200Hz, BW = 12.5Hz, HPF (0.1Hz) y LPF activado
+
+EjeX: Drift = (0.2366 +-3.9874)dps      EjeY: Drift = (0.5818 +-4.1336)dps      EjeZ: Drift = (-0.0834 +-4.9380)dps
+      Angulo = 0.1227*t +3.0869               Angulo = 0.3369*t +7.0702               Angulo = -0.0585*t +-0.5226
+
+
+
+Decidido, DR=400Hz, BW=20Hz, LPF ON, HPF OFF, el hpf crea picos de +-17dps en las mediciones.
