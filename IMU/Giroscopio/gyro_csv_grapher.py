@@ -15,6 +15,7 @@ python gyro_csv_grapher.py prueba.csv
 """
 import matplotlib
 matplotlib.use('Tkagg')
+#matplotlib.use('GTK')
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
@@ -23,11 +24,11 @@ import sys
 
 #Evitamos que falten argumentos
 if len(sys.argv) < 2:
-    print "Necesitas especificar (1) el nombre del archivo a guardar y (2) la cantidad de muestras"
+    print ("Necesitas especificar (1) el nombre del archivo a guardar y (2) la cantidad de muestras")
     exit()
 #Evitamos que el archivo de escritura no sea un archivo .csv
 if ".csv" not in sys.argv[1]:
-    print "'{}' no es un nombre valido de archivo csv".format(sys.argv[1])
+    print ("'{}' no es un nombre valido de archivo csv".format(sys.argv[1]))
     exit()
 
 ##################################################################################################################
@@ -103,7 +104,7 @@ ax6 = fig1.add_subplot(3,2,6)
 
 #Top Left  = Xdps
 ax1.plot(data['tiempo'], data['Xdps'], 'b')
-ax1.plot(data['tiempo'], map(lambda x: x*regrXdps[0]+regrXdps[1],data['tiempo']),'k')
+ax1.plot(data['tiempo'], list(map(lambda x: x*regrXdps[0]+regrXdps[1],data['tiempo'])),'k')
 ax1.set_title('Eje X, Velocidad Angular')
 # ax1.set_xlabel('tiempo (segundos)')
 ax1.set_ylabel('Xdps (grados por segundo)')
@@ -118,7 +119,7 @@ ax2.grid()
 
 #Mid Left  = Ydps
 ax3.plot(data['tiempo'], data['Ydps'], 'b')
-ax3.plot(data['tiempo'], map(lambda x: x*regrYdps[0]+regrYdps[1],data['tiempo']),'k')
+ax3.plot(data['tiempo'], list(map(lambda x: x*regrYdps[0]+regrYdps[1],data['tiempo'])),'k')
 ax3.set_title('Eje Y, Velocidad Angular')
 # ax3.set_xlabel('tiempo (segundos)')
 ax3.set_ylabel('Xdps (grados por segundo)')
@@ -133,7 +134,7 @@ ax4.grid()
 
 #Bottom Left  = Zdps
 ax5.plot(data['tiempo'], data['Zdps'], 'b')
-ax5.plot(data['tiempo'], map(lambda x: x*regrZdps[0]+regrZdps[1],data['tiempo']),'k')
+ax5.plot(data['tiempo'], list(map(lambda x: x*regrZdps[0]+regrZdps[1],data['tiempo'])),'k')
 ax5.set_title('Eje Z, Velocidad Angular')
 ax5.set_xlabel('tiempo (segundos)')
 ax5.set_ylabel('Xdps (grados por segundo)')

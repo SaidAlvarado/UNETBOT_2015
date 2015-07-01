@@ -6,6 +6,51 @@ de Euler). Luego lo enivia por tcp/ip a una computadora que grafica el resultado
 
 """
 
+# Funciones de comunicacion
+
+def get_interfaces():
+    """ (Python 3) Funcion que devuelve una lista con strings de todos las interfaces de red que tenga tu computadora
+        *NOTA: Solo funciona en Linux
+
+        get_ifaces()
+        ['enp3s0', 'vmnet1', 'vmnet8', 'wlp2s0', '    lo']"""
+
+    with open('/proc/net/dev','r') as f:        #Abrimos el archivo con la informacion de red
+        interfaces = []
+        for linea in f:
+            if ':' in linea:
+                interfaces.append(linea[:linea.find(':')])  #Extraemos los primeros caracteres de las lineas con informacion de las interfaces
+    return [iface.lstrip().rstrip() for iface in interfaces]
+
+
+def get_ip_address2(ifname):
+    """ (Python 2)Funcion que recibe un string con el nombre de una interfaz de red y devuelve
+        un string con la direccion IP de la interfaz, o None si dicha interfaz no
+        tiene direccion IP asignada.
+
+            get_ip_address('wlp2s0')
+            '192.168.1.4'               """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        return socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', ifname[:15])
+        )[20:24])
+    except:
+        return None
+
+
+
+def get_network_config2():
+    """ (Python 2) Funcion que devuelve un diccionario  con las interfaces de red de la computadora y sus respectivas direcciones
+        ip. """
+    interfaces = get_interfaces()
+    ips = [get_ip_address2(ip) for ip in interfaces]
+    return dict(zip(interfaces,ips))
+
+
+
 
 # Funciones que configuran  los sensores
 def accel_setup():
@@ -51,7 +96,7 @@ def accel_read():
     accel_data[2] = int('0b' + zh[1:] + zl,2) - int(zh[0])*(2**(len(zh+zl)-1))  #Eje Z  #Unimos los bytes en complemento a 2
     #Normalizamos el vector antes de retornarlo
     norma = np.linalg.norm(accel_data)
-    accel_data = map(lambda x: x/norma,accel_data)
+    accel_data = list(map(lambda x: x/norma,accel_data))
     return accel_data
 
 
@@ -86,7 +131,7 @@ def magn_read():
     magn_data[2] = (magn_data[2] - 3.0) * 0.974358974359
     #Normalizamos el vector
     norma = np.linalg.norm(magn_data)
-    magn_data = map(lambda x: x/norma,magn_data)
+    magn_data = list(map(lambda x: x/norma,magn_data))
     return magn_data
 
 
@@ -119,7 +164,7 @@ def gyro_read():
     gyro_data[1] = float(y)*70/1000
     gyro_data[2] = float(z)*70/1000
     #Transformamos los datos a radianes/seg
-    gyro_data = map(math.radians, gyro_data)
+    gyro_data = list(map(math.radians, gyro_data))
     return gyro_data
 
 
@@ -296,15 +341,32 @@ import time
 import numpy as np
 import math
 import socket
+import fcntl
+import struct
 
 
+#Analizamos la red para encontrar el ip correcto
+inter_faces = get_network_config2()
+if inter_faces['eth0'] == None:        #Le damos prioridad a la conexion ethernet
+    host = inter_faces['wlan0']
+    tarjeta = 'wlan0'
+else:
+    host = inter_faces['eth0']
+    tarjeta = 'eth0'
+
+
+print("Intentando establecer conexion en interfaz {} con la direccion ip {}".format(tarjeta, host))
 #Establecemos la conexion
-host = "10.42.0.178"
-port = 8888
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((host,port))
-s.listen(1)
-conn,addr = s.accept()
+try:
+    port = 23322
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((host,port))
+    s.listen(1)
+    conn,addr = s.accept()
+except:
+    s.close()                       #Si algo falla, cierra todo.
+    print("[-] ERROR = No se pudo establecer la conexion")
+    exit()
 
 
 #Abrimos el puerto I2C
@@ -364,7 +426,12 @@ while(1):
     print("Pitch: {:+.2f}deg   Roll: {:+.2f}deg   Yaw: {:+.2f}deg    Quaternion:({:+.3f}, {:+.3f}, {:+.3f}, {:+.3f})".format(Angulos[0],Angulos[1],Angulos[2], SEq[0], SEq[1], SEq[2], SEq[3] ))
 
     mensaje = "{:+.2f},{:+.2f},{:+.2f}\n".format(Angulos[0],Angulos[1],Angulos[2])
-    conn.sendall(mensaje)
+    try:
+        conn.sendall(mensaje)           #Enviamos por TCP la informacion
+    except:
+        s.close()                       #Si algo falla, cierra todo.
+        print("[-] ERROR = No se pudo mandar el paquete")
+        exit()
 
     time.sleep(0.01)
     # print("Accel:({:+.3f},{:+.3f},{:+.3f})     Magn:({:+.3f},{:+.3f},{:+.3f})     Gyro:({:+.3f},{:+.3f},{:+.3f})".format(accel_data[0],accel_data[1],accel_data[2],magn_data[0],magn_data[1],magn_data[2],gyro_data[0],gyro_data[1],gyro_data[2]))
