@@ -190,12 +190,10 @@ while(True):
     cumulos.sort(cmp = lambda x,y: len(y) - len(x))   # Los ordenamos por tamano.
 
 
-    #Ahora que tenemos todos los cumulos de lineas intentaremos sacar los mayores
-    # print ("Hola! normal = {}".format(len(cumulos)))
-    # for x in cumulos[0:2]:
-        # print ("tamano = {} vecindario = {}".format(len(x),x))
-        # color =(random.randint(0,255),random.randint(0,255),random.randint(0,255))
-        # draw_lines(frame,x,color)
+    # Ahora que tenemos todos los cumulos de lineas intentaremos sacar los mayores
+    # for x in cumulos:
+    #     color =(random.randint(0,255),random.randint(0,255),random.randint(0,255))
+    #     draw_lines(frame,x,color)
 
     # Calculamos el promedio de los dos cumulos mayores, y dibujamos la mejor aproximacion
     lineaIzq = [[x[0] for x in cumulos[0]], [x[1] for x in cumulos[0]]]

@@ -15,7 +15,7 @@ python gyro_csv_grapher.py prueba.csv
 """
 import matplotlib
 matplotlib.use('Tkagg')
-#matplotlib.use('GTK')
+#matplotlib.use('GTKAgg')
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
