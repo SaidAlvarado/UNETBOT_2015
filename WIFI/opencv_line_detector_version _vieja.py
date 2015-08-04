@@ -131,7 +131,7 @@ while(True):
 
     # Tomamos un threshold para eliminar el ruido de la imagen
     # thres = cv2.adaptiveThreshold(sobelx,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,3,2)
-    ret,thres = cv2.threshold(sobelx,60,255,cv2.THRESH_BINARY)
+    ret,thres = cv2.threshold(sobelx,27,255,cv2.THRESH_BINARY)
 
     # edges = cv2.Canny(blurred,50,150)
 
@@ -191,9 +191,9 @@ while(True):
 
 
     # Ahora que tenemos todos los cumulos de lineas intentaremos sacar los mayores
-    for x in cumulos:
-        color =(random.randint(0,255),random.randint(0,255),random.randint(0,255))
-        draw_lines(frame,x,color)
+    # for x in cumulos:
+    #     color =(random.randint(0,255),random.randint(0,255),random.randint(0,255))
+    #     draw_lines(frame,x,color)
 
     # Calculamos el promedio de los dos cumulos mayores, y dibujamos la mejor aproximacion
     lineaIzq = [[x[0] for x in cumulos[0]], [x[1] for x in cumulos[0]]]
