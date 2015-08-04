@@ -138,6 +138,11 @@ def line_detector(frame):
     if  cumulos != None and len(cumulos) >= 2:
         lineaIzq = [np.mean([x[0] for x in cumulos[0]]), np.mean([x[1] for x in cumulos[0]])]
         lineaDer = [np.mean([x[0] for x in cumulos[1]]), np.mean([x[1] for x in cumulos[1]])]
+        #Nos aseguramos de que las lineas esten en el orden correcto.
+        if (((frame.shape[0] - lineaDer[1])/lineaDer[0]) - ((frame.shape[0] - lineaIzq[1])/lineaIzq[0]) < 0):
+            #si la que asignamos como lineaDer es la linea mas izquierda, invertimos lo que devolvemos
+            return [lineaDer, lineaIzq]
+
     else:
         lineaIzq = None
         lineaDer = None
