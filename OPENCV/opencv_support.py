@@ -157,7 +157,7 @@ def object_finder(frame, colores = ['verde','blanco'], lines = None):
         rojoLow     = np.array([0,198,95])
         rojoHigh    = np.array([17,255,255])
         amarilloLow = np.array([22,246,99])
-        amarilloHigh= np.array([26,255,231])
+        amarilloHigh= np.array([38,255,231])
         azulLow     = np.array([90,54,0])
         azulHigh    = np.array([116,255,93])
         verdeLow    = np.array([37,144,0])
@@ -206,7 +206,7 @@ def object_finder(frame, colores = ['verde','blanco'], lines = None):
                     cenX = int(M['m10']/M['m00'])
                     cenY = int(M['m01']/M['m00'])
                     # Agregamos el centroide al diccionario
-                    dictFallas[color].append((cenX,cenY))
+                    dictFallas[color].append([(cenX,cenY),None])            # <==== Nota que es una tupla dentro de una lista
 
         # Devolvemos el diccionario con todos los centroides.
         return dictFallas
@@ -214,3 +214,50 @@ def object_finder(frame, colores = ['verde','blanco'], lines = None):
 
 
 
+def perspective_bound(frame, lineas):
+
+    """
+    Le pasas las dos lineas y te devuelva los puntos limitrofes de cada una
+
+    """
+
+    # Si algo falla, devuelve None
+    if lineas[0] == None: return None
+
+    #Desempacamos
+    [lineaIzq,lineaDer] = lineas
+
+    #Analizamos la linea Izquierda.
+    y1 = int(0)
+    x1 = int((y1 - lineaIzq[1])/lineaIzq[0])
+    y2 = int(frame.shape[0])
+    x2 = int((y2 - lineaIzq[1])/lineaIzq[0])
+
+    if (abs(x1) > 5E4 or abs(x2) > 5E4):
+        x1 = int(0)
+        y1 = int(lineaIzq[0]*x1 + lineaIzq[1])
+        x2 = int(frame.shape[1])
+        y2 = int(lineaIzq[0]*x2 + lineaIzq[1])
+
+    # Asignamos los puntos izquierdos
+    topLeft = [x1, y1]
+    botomLeft = [x2, y2]
+
+    #Analizamos la linea Derecha.
+    y1 = int(0)
+    x1 = int((y1 - lineaDer[1])/lineaDer[0])
+    y2 = int(frame.shape[0])
+    x2 = int((y2 - lineaDer[1])/lineaDer[0])
+
+    if (abs(x1) > 5E4 or abs(x2) > 5E4):
+        x1 = int(0)
+        y1 = int(lineaDer[0]*x1 + lineaDer[1])
+        x2 = int(frame.shape[1])
+        y2 = int(lineaDer[0]*x2 + lineaDer[1])
+
+    # Asignamos los puntos Derechos
+    topRight = [x1, y1]
+    botomRight = [x2, y2]
+
+    # Ahora devolvemos todos los puntos.
+    return [topLeft, topRight, botomLeft, botomRight]
