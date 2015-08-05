@@ -50,6 +50,10 @@ while(True):
 
 ### Ahora viene el calculo de lineas paralelas ###
 
+    # Variables importantes
+    distaciaFocal = 1286    #1286.07
+    largoEntreLineas = 12   #cm
+
     # Primero calculamos los cuatro puntos limites de las lineas electricas.
     rectOriginal = np.float32(perspective_bound(frame, [lineaIzq,lineaDer]))
     # Ahora definimos los limites de la nueva imagen
@@ -63,10 +67,28 @@ while(True):
         frame_perspective = cv2.warpPerspective(frame,M, (height,height))
 
         # #Iteramos sobre todos los puntos que encontramos para encontrar su paralela
-        # for color in fallas:
-        #     for centro in fallas[color]:
-        #         centro perspecti
-
+        for color in fallas:
+            for centro in fallas[color]:
+                #Transformamos el centroide del
+                centro_perspectiva = cv2.perspectiveTransform(np.array([[centro[0]]],dtype = 'float32'),M)    #Los puntos que le entran a la funcion perspectiveTransform, tienen que ser de la forma [[[x1,y1],[x2,y2, ...]]], con ESA cantidad de parentesis.
+                # Calculamos el mismo punto en la otra linea
+                centro_perspectiva = centro_perspectiva[0][0].copy()
+                if centro_perspectiva[0] < height/2:
+                    punto_contrario_perspectiva = np.array([height, centro_perspectiva[1]])
+                else:
+                    punto_contrario_perspectiva = np.array([0, centro_perspectiva[1]], dtype = 'float')
+                # Destransformamos el punto
+                # print "M = {}".format(M)
+                # print "invM = {}".format(cv2.invert(M))
+                punto_contrario = cv2.perspectiveTransform(np.array([[punto_contrario_perspectiva]],dtype = 'float32'),cv2.invert(M)[1])
+                #Graficamos, las lineas que encontramos
+                punto_contrario = punto_contrario[0][0].copy()
+                cv2.line(frame_copy,tuple(centro[0]),tuple(punto_contrario),coloresDibujo['azul'],2)
+                #Calculamos la distancia en pixeles
+                distPixeles = np.sqrt(np.square(centro[0][0] - punto_contrario[0]) + np.square(centro[0][1] - punto_contrario[1]))
+                # Usamos la ecuacion de similitud triangular para sacar la distancia
+                distCamara = largoEntreLineas*distaciaFocal/distPixeles
+                cv2.putText(frame_copy, "{:0.2f}cm".format(distCamara), (centro[0][0] + 45, centro[0][1] + 20), cv2.FONT_HERSHEY_SIMPLEX,0.7, coloresDibujo[color], 2)
 
 
 
@@ -78,10 +100,10 @@ while(True):
     # im0 = np.dstack((mask_blanco,mask_blanco,mask_blanco))
     # im1 = np.dstack((gray,gray,gray))
     # im2 = np.dstack((mask,mask,mask))
-    resultado = np.hstack((frame_copy,frame_perspective))
+    # resultado = np.hstack((frame_copy,frame_perspective))
     # resultado = np.vstack((resultado,np.hstack((im0,img_blanco))))
-    resultado = cv2.resize(resultado,None,fx=0.6, fy=0.6, interpolation = cv2.INTER_AREA)
-    # resultado = frame_copy
+    # resultado = cv2.resize(resultado,None,fx=0.6, fy=0.6, interpolation = cv2.INTER_AREA)
+    resultado = frame_copy
 
     # Display the resulting frame
     cv2.imshow('frame',resultado)

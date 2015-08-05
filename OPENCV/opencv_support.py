@@ -206,7 +206,7 @@ def object_finder(frame, colores = ['verde','blanco'], lines = None):
                     cenX = int(M['m10']/M['m00'])
                     cenY = int(M['m01']/M['m00'])
                     # Agregamos el centroide al diccionario
-                    dictFallas[color].append([(cenX,cenY),None])            # <==== Nota que es una tupla dentro de una lista
+                    dictFallas[color].append([[cenX,cenY],None])            # <==== Nota que es una tupla dentro de una lista
 
         # Devolvemos el diccionario con todos los centroides.
         return dictFallas
