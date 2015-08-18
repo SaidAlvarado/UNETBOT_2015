@@ -84,21 +84,26 @@ LightPosition = 1.0, 0.0, 2.0, 1.0
 
 #Intentamos ubicar la direccion del Raspberry PI
 servidor = 'raspberrypi'
+direccion = '192.168.0.100' #Direccion de emergencia para cuando el escaneo no esta funcionando
+direccion = None #Direccion de emergencia para cuando el escaneo no esta funcionando
 
 #Analizamos las interfaces de red actuales
 inter_faces = get_network_config2()
 inter_faces = {lab:ip for lab,ip in inter_faces.items() if ip != None}  #Limpiamos las interfaces que no estan conectadas
+print inter_faces
 #Buscamos al raspberry pi en las redes actuales
 if 'enp3s0' in inter_faces:
     host = scan_ip(inter_faces['enp3s0']).values()[0]
     print("Encontrado {} en {}, con direccion {}".format(servidor,'enp3s0',host))
-else:
+elif direccion == None:
     for iface in inter_faces:                                                          #Revisamos todas las interzaces que no tienen una conexion
-        red = scan_ip(inter_faces[iface])                                                   #Escaneamos cada interfaz para ver otras conexiones en LAN
+        red = scan_ip(inter_faces[iface])                                             #Escaneamos cada interfaz para ver otras conexiones en LAN
         if servidor in red:                                                                 #Si el label del servidor que estamos buscando se encuentra en el resultado del escaneo
             host = red[servidor]                                                            #Devolvemos dicha direccion
             print("Encontrado {} en {}, con direccion {}".format(servidor,iface,host))      #Avisamos el resultado
             break                                                                           #Terminamos el loop de escaneos
+else:
+    host = direccion
 
 
 #Intentamos conectar
