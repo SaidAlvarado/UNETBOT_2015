@@ -23,7 +23,18 @@ coloresDibujo = {'rojo':(0,0,255),'verde':(0,255,0),'azul':(255,0,0),'amarillo':
 def polar2poly(rt):
     """ Funcion que toma un tupla de valores (rho,theta) que salen de la transformada de linea de Hough,
         y usando la funcion de regresion linear 'polyfit', calcula la ecuacion  Y = mX + b de la linea, en pixeles
-        y devuelve la lista [m, b] """
+        y devuelve la tupla (m, b)
+
+
+        Argumentos:
+            rt (tupla): tupla con los valores (rho,theta) resultantes de la transformada de Hough (HoughLines())
+
+
+        Devuelve:
+            tupla: devuelve la version de tra##################################################################################################################################################3
+
+
+    """
 
     rho,theta = rt              # Desempaquetamos la tupla
     # if theta == 0: return None  # Ignoramos las lineas de pendiente infinita

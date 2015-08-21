@@ -6,7 +6,13 @@ Deteccion de lineas perpendiculares. Se usan transformaciones de perspectiva par
 Para luego destransformar y usar la ecuacion de la distancia focal para encontrar la distancia al objetivo.
 
 NOOOOOOOOTAAAAAAAAAAA!!!!! VER SI SE PUEDE CALCULAR EL ANGULO DE INCLINACION A PARTIR DE LA MATRIZ DE PERSPECTIVA.
+
+
+IDEAAAAAA!!!!!       Usar los aisladores de las torres para sacar las rectas  paralelas reales.
+
+
 """
+
 
 import numpy as np
 import cv2
@@ -38,14 +44,6 @@ while(True):
     # buscamos las fallas sobre la linea.
     fallas = object_finder(frame, ['rojo','amarillo','blanco'], (lineaIzq,lineaDer))
 
-    #Pequeno for para graficar las fallas.
-    for color in fallas:
-        i = 1
-        for objeto in fallas[color]:
-            cenX,cenY = objeto[0]
-            cv2.circle(frame_copy,(cenX,cenY),40,coloresDibujo[color],3)
-            cv2.putText(frame_copy, "{} #{}".format(color,i), (cenX + 45, cenY), cv2.FONT_HERSHEY_SIMPLEX,1.0, coloresDibujo[color], 2)
-            i+=1
 
 
 ### Ahora viene el calculo de lineas paralelas ###
@@ -53,6 +51,7 @@ while(True):
     # Variables importantes
     distaciaFocal = 1286    #1286.07
     largoEntreLineas = 12   #cm
+    altura_camara = 11.2 #cm
 
     # Primero calculamos los cuatro puntos limites de las lineas electricas.
     rectOriginal = np.float32(perspective_bound(frame, [lineaIzq,lineaDer]))
@@ -81,14 +80,29 @@ while(True):
                 # print "M = {}".format(M)
                 # print "invM = {}".format(cv2.invert(M))
                 punto_contrario = cv2.perspectiveTransform(np.array([[punto_contrario_perspectiva]],dtype = 'float32'),cv2.invert(M)[1])
-                #Graficamos, las lineas que encontramos
+                # Graficamos, las lineas que encontramos
                 punto_contrario = punto_contrario[0][0].copy()
                 cv2.line(frame_copy,tuple(centro[0]),tuple(punto_contrario),coloresDibujo['azul'],2)
-                #Calculamos la distancia en pixeles
+                # Calculamos la distancia en pixeles
                 distPixeles = np.sqrt(np.square(centro[0][0] - punto_contrario[0]) + np.square(centro[0][1] - punto_contrario[1]))
                 # Usamos la ecuacion de similitud triangular para sacar la distancia
                 distCamara = largoEntreLineas*distaciaFocal/distPixeles
-                cv2.putText(frame_copy, "{:0.2f}cm".format(distCamara), (centro[0][0] + 45, centro[0][1] + 20), cv2.FONT_HERSHEY_SIMPLEX,0.7, coloresDibujo[color], 2)
+                # Ahora usamos la relacion de pitagoras para calcular la distancia de la falla al chasis
+                distChasis = np.sqrt(np.square(distCamara) - np.square(altura_camara))
+                # guardamos la distancia en centimetros en el diccionario de fallas
+
+                centro[1] = distChasis
+
+        # Ahora imprimimos y mostramos todo.
+        # Pequeno for para graficar las fallas y sus distancias.
+        for color in fallas:
+            i = 1
+            for objeto in fallas[color]:
+                cv2.circle(frame_copy,tuple(objeto[0]),40,coloresDibujo[color],3)
+                cv2.putText(frame_copy, "{} #{}".format(color,i), (objeto[0][0] + 45, objeto[0][1]), cv2.FONT_HERSHEY_SIMPLEX,1.0, coloresDibujo[color], 2)
+                cv2.putText(frame_copy, "{:0.2f}cm".format(objeto[1]), (objeto[0][0] + 45, objeto[0][1] + 20), cv2.FONT_HERSHEY_SIMPLEX,0.7, coloresDibujo[color], 2)
+                i+=1
+
 
 
 
