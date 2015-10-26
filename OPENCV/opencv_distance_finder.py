@@ -50,7 +50,7 @@ while(True):
 
     # Variables importantes
     distaciaFocal = 1286    #1286.07
-    largoEntreLineas = 12   #cm
+    largoEntreLineas = 25   #cm
     altura_camara = 11.2 #cm
 
     # Primero calculamos los cuatro puntos limites de las lineas electricas.

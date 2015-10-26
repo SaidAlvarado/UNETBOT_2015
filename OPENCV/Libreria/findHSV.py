@@ -2,18 +2,34 @@ __author__ = 'Said'
 
 import cv2
 import numpy as np
+import warnings
+import sys
 
 def nothing(x):
     pass
 
 
-# cap = cv2.VideoCapture("udpsrc port=5000 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264 ! videoconvert ! appsink sync=false")
-# ret,frame = cap.read()    #Definimos unas variables con el tamano de la imagen
+#Evitamos que falten argumentos
+if len(sys.argv) < 2:
+    print ("Necesitas especificar el nombre del archivo cargar")
+    exit()
 
-image = cv2.imread('1.jpg',1)
+warnings.filterwarnings("ignore")
+
+#Predetermined values
+Hmi = 20
+Smi = 34
+Vmi = 0
+
+Hma = 118
+Sma = 152
+Vma = 141
 
 
-frame = cv2.resize(image,None,fx=.2, fy=.1, interpolation = cv2.INTER_AREA)
+
+cap = cv2.VideoCapture(sys.argv[1])
+ret,frame = cap.read()    #Definimos unas variables con el tamano de la imagen
+frame = cv2.resize(frame,None,fx=.4, fy=.4, interpolation = cv2.INTER_AREA)
 cv2.namedWindow('image')
 
 # print "{}x{}x{}".format(frame.shape[0], frame.shape[1], frame.shape[2])
@@ -27,7 +43,23 @@ cv2.createTrackbar('Smax', 'image', 0, 255, nothing)
 cv2.createTrackbar('Vmin', 'image', 0, 255, nothing)
 cv2.createTrackbar('Vmax', 'image', 0, 255, nothing)
 
+#Put on the values to search for
+cv2.setTrackbarPos('Hmin', 'image',Hmi)
+cv2.setTrackbarPos('Hmax', 'image',Hma)
+cv2.setTrackbarPos('Smin', 'image',Smi)
+cv2.setTrackbarPos('Smax', 'image',Sma)
+cv2.setTrackbarPos('Vmin', 'image',Vmi)
+cv2.setTrackbarPos('Vmax', 'image',Vma)
+
 while(1):
+
+    ret,frame = cap.read()    #Definimos unas variables con el tamano de la imagen
+
+    if frame == None or ret == None:
+        cap = cv2.VideoCapture(sys.argv[1])
+        ret,frame = cap.read()
+
+    frame = cv2.resize(frame,None,fx=.4, fy=.4, interpolation = cv2.INTER_AREA)
 
     Hmi = cv2.getTrackbarPos('Hmin', 'image')
     Smi = cv2.getTrackbarPos('Smin', 'image')

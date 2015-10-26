@@ -88,6 +88,10 @@ class lineAnalyzer(object):
         # Silenciamos las advertencias
         warnings.filterwarnings("ignore")
 
+        # Variables de medicion de tiempo
+        self.start_time = None
+        self.last_time = None
+
 
     def begin(self):
         """Inicialza el tipo de debbugeo y el por donde se van a obtener los fotogramas"""
@@ -196,30 +200,63 @@ class lineAnalyzer(object):
     def processPicture(self, uri):
         """ Funcion de debug pensada para analizar fotos estaticas, para pruebas """
 
-
+        self.start_time = time.time()
         image = cv2.imread(uri,1)
         self.frame = image.copy()
+
+        print("[+] Detector de lineas:")
+        line_time = time.time()
+
+        print("    [-] Leer imagen: {}".format(time.time() - self.start_time))
+        self.last_time = time.time()
+
 
         # Primero intentamos limpiar la imagen de distracciones
         # Convertimos el Roi a HSV
         hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
         # Y filtramos por color Rojo
         mask = cv2.inRange(hsv,self.cableLow,self.cableHigh)
-        # Operacion morfologica de apertura
-        kernel1 = np.ones((30,30),np.uint8)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel1, iterations=1)
-        #imagen cortada
+
+        print("    [-] Detectar color de lineas: {}".format(time.time() - self.last_time))
+        self.last_time = time.time()
+
+        # # Operacion morfologica de apertura
+        # kernel1 = np.ones((30,30),np.uint8)
+        # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel1, iterations=1)
+        # imagen cortada
         imagen_cortada = cv2.bitwise_and(image, image, mask = mask)
 
+        # print("    [-] Apertura 30x30: {}".format(time.time() - self.last_time))
+        # self.last_time = time.time()
+
+        # imagen_cortada = image
 
         # Corremos el detector de lineas.
         lineaIzq,lineaDer =  self.lineDetector(imagen_cortada)
 
+        print("[*] Tiempo conjunto: {}\n".format(time.time() - line_time))
+        self.last_time = time.time()
+
+        print("[+] Detector de objetos:")
+        object_time = time.time()
+
         # Corremos el ubicador de objetos.
         fallas = self.objectFinder(image, ['verde','blanco'], (lineaIzq,lineaDer))
 
+        print("[*] Tiempo conjunto: {}\n".format(time.time() - object_time))
+        self.last_time = time.time()
+
+        print("[+] Detector de distancias:")
+        distance_time = time.time()
+
         # Corremos el medidor de distancias.
         fallas = self.distanceFinder(image,(lineaIzq,lineaDer),fallas)
+
+        print("[*] Tiempo conjunto: {}\n".format(time.time() - distance_time))
+        self.last_time = time.time()
+
+
+        print("Tiempo total de ejecucion: {}".format(time.time() -  self.start_time))
 
         # Devolvemos el resultados
         return fallas
@@ -377,8 +414,14 @@ class lineAnalyzer(object):
         # Hacemos un Threshold binario normal.
         ret,thres = cv2.threshold(sobelx,60,255,cv2.THRESH_BINARY)    # valor normal 60
 
+        print("    [-] Pre-Hough: {}".format(time.time() - self.last_time))
+        self.last_time = time.time()
+
         # Usamos la imagen binaria del Threshold, y la pasamos por la transformada lenta de Hough
         lines = cv2.HoughLines(thres,1,np.pi/180,200)
+
+        print("    [-] Detector de lineas de Hough: {}".format(time.time() - self.last_time))
+        self.last_time = time.time()
 
         ### Aqui empezamos a deducir las lineas, apartir del procesamiento de imagenes de arriba ###
 
@@ -404,6 +447,10 @@ class lineAnalyzer(object):
             # Valor de error en caso de emergencia
             cumulos = None
 
+        print("    [-] Sorting de Cumulos: {}".format(time.time() - self.last_time))
+        self.last_time = time.time()
+
+        print ("Numero de cumulos = {}".format(cumulos))
 
         # Intento para que el programa funcione como debe ser en ambientes con mucho ruido, restrigiendo
         # la busqueda a lineas con pendientes opuestas.
@@ -416,7 +463,8 @@ class lineAnalyzer(object):
 
         cumulos_prom_filt = filter(lambda x: np.abs(x[0] - pendiente_primera) < self.deltaPendientePrimera, cumulos_prom)
 
-
+        print("    [-] Filtro de simetria de lineas: {}".format(time.time() - self.last_time))
+        self.last_time = time.time()
 
 
         # Calculamos el promedio de los dos cumulos mayores, y los asignamos a las dos lineas de transmision.
@@ -435,6 +483,8 @@ class lineAnalyzer(object):
             lineaIzq = None
             lineaDer = None
 
+        print("    [-] Arreglos finales: {}".format(time.time() - self.last_time))
+        self.last_time = time.time()
 
 
         #Debugging output
@@ -466,6 +516,10 @@ class lineAnalyzer(object):
                 self.frame_debug_line = resultado.copy()
 
 
+                print("    [-] Debug de lineas: {}".format(time.time() - self.last_time))
+                self.last_time = time.time()
+
+
 
         if inv == False:
             return [lineaIzq, lineaDer]
@@ -493,6 +547,9 @@ class lineAnalyzer(object):
 
             # Este es el diccionario de salida
             dictFallas = {}
+
+            print("    [-] Preparar Roi: {}".format(time.time() - self.last_time))
+            self.last_time = time.time()
 
             # Multi-mascara
             if 'object' in self.debug_mode:
@@ -531,6 +588,10 @@ class lineAnalyzer(object):
                         # Agregamos el centroide al diccionario
                         dictFallas[color].append([[cenX,cenY],None])            # <==== Nota que es una lista dentro de una lista
 
+            print("    [-] Filtro de color y Contornos: {}".format(time.time() - self.last_time))
+            self.last_time = time.time()
+
+
             #Debugging output
             if 'object' in self.debug_mode:
 
@@ -549,6 +610,9 @@ class lineAnalyzer(object):
                 resultado = cv2.resize(resultado,None,fx=0.4, fy=0.4, interpolation = cv2.INTER_AREA)
 
                 self.frame_debug_object = resultado.copy()
+
+                print("    [-] Debug de objetos: {}".format(time.time() - self.last_time))
+                self.last_time = time.time()
 
             # Devolvemos el diccionario con todos los centroides.
             return dictFallas
@@ -583,6 +647,9 @@ class lineAnalyzer(object):
                     # Transformamos la imagen para ver como queda
                     frame_perspective = cv2.warpPerspective(frame,M, (self.height,self.height))
 
+                print("    [-] Calcular matrix de perspectiva: {}".format(time.time() - self.last_time))
+                self.last_time = time.time()
+
                 # #Iteramos sobre todos los puntos que encontramos para encontrar su paralela
                 for color in fallas:
                     for centro in fallas[color]:
@@ -611,6 +678,9 @@ class lineAnalyzer(object):
 
                         centro[1] = distChasis
 
+                print("    [-] Trans y destransformaciones de perspectiva {}".format(time.time() - self.last_time))
+                self.last_time = time.time()
+
                 #Debugging output
                 if 'distance' in self.debug_mode:
 
@@ -630,6 +700,9 @@ class lineAnalyzer(object):
                     resultado = cv2.resize(resultado,None,fx=0.5, fy=0.5, interpolation = cv2.INTER_AREA)
 
                     self.frame_debug_distance = resultado.copy()
+
+                    print("    [-] Distance debug: {}".format(time.time() - self.last_time))
+                    self.last_time = time.time()
 
 
                 return fallas

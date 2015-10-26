@@ -241,7 +241,7 @@ while(True):
     ################  Aqui empieza el analisis de contornos y de colores #############3
 
     #Definimos las variables
-    roiLineSize = 15
+    roiLineSize = 50
     minContourArea = 120
     kernel = np.ones((5,4),np.uint8)
 
@@ -309,8 +309,7 @@ while(True):
     contours, hierarchy = cv2.findContours(mask_blanco.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     # Eliminamos los contornos muy pequenos
     # O que no tengan 4 esquinas.
-    esquinas = len(cv2.approxPolyDP(x, 0.02 * cv2.arcLength(x, True), True))
-    contours = [x for x in contours if cv2.contourArea(x) > minContourArea and esquinas >= 4  and esquinas <= 5]
+    contours = [x for x in contours if cv2.contourArea(x) > minContourArea ]
     # Revisamos si conseguimos contornos validos.
     if type(contours) != bool and len(contours) > 0:
         # Iteramos sobre todos los contornos encontrados

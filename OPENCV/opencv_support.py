@@ -55,7 +55,8 @@ def polar2poly(rt):
     return tuple(eq)
 
 def draw_lines(frame, lines, colors = None, size = 2):
-    """Esta funcion recibe una imagen y unas lineas definidas como listas [pendiente corte_con_y] y dibujandolas con un color
+    """Esta funcion recibe una imagen y unas lineas definidas como listas
+       [pendiente, corte_con_y] y dibujandolas con un color
        aleatorio o dado por el usuario"""
 
     if type(lines) == list or tuple:
@@ -165,23 +166,23 @@ def object_finder(frame, colores = ['verde','blanco'], lines = None):
 
     if lines != None:
         # Filtros de color de HSV
-        rojoLow     = np.array([0,198,95])
-        rojoHigh    = np.array([17,255,255])
+        rojoLow     = np.array([0,121,34])
+        rojoHigh    = np.array([26,255,122])
         amarilloLow = np.array([22,246,99])
         amarilloHigh= np.array([38,255,231])
         azulLow     = np.array([90,54,0])
         azulHigh    = np.array([116,255,93])
         verdeLow    = np.array([37,144,0])
         verdeHigh   = np.array([67,255,212])
-        blancoLow   = np.array([0,0,104])
-        blancoHigh  = np.array([179,196,255])
+        blancoLow   = np.array([0,52,134])
+        blancoHigh  = np.array([179,95,221])
 
         #Diccionario con los colores
         dicColores = {'rojo': [rojoLow,rojoHigh],'amarillo': [amarilloLow,amarilloHigh],'azul': [azulLow,azulHigh],'verde': [verdeLow,verdeHigh],'blanco': [blancoLow,blancoHigh] }
 
         #Definimos las variables
-        roiLineSize = 15
-        minContourArea = 120
+        roiLineSize = 50        #15
+        minContourArea = 30     #150
         kernel = np.ones((5,4),np.uint8)
 
         #Desempaquetamos las lineas las lineas
@@ -217,7 +218,7 @@ def object_finder(frame, colores = ['verde','blanco'], lines = None):
                     cenX = int(M['m10']/M['m00'])
                     cenY = int(M['m01']/M['m00'])
                     # Agregamos el centroide al diccionario
-                    dictFallas[color].append([[cenX,cenY],None])            # <==== Nota que es una tupla dentro de una lista
+                    dictFallas[color].append([[cenX,cenY],None])            # <==== Nota que es una lista dentro de una lista
 
         # Devolvemos el diccionario con todos los centroides.
         return dictFallas
@@ -272,3 +273,66 @@ def perspective_bound(frame, lineas):
 
     # Ahora devolvemos todos los puntos.
     return [topLeft, topRight, botomLeft, botomRight]
+
+
+
+
+# Algoritmo que mide las distancias a la falla.
+def distance_finder(frame, lines = None, fallas = None):
+
+    if lines != None:
+        # Variables importantes
+        distaciaFocal = 1286    #1286.07
+        largoEntreLineas = 25   #cm
+        altura_camara = 11.2 #cm
+
+        # Variables menos importantes
+        height = frame.shape[0]
+        width = frame.shape[1]
+
+        #Desempacamos
+        [lineaIzq,lineaDer] = lines
+
+        ### Ahora viene el calculo de lineas paralelas ###
+
+        # Primero calculamos los cuatro puntos limites de las lineas electricas.
+        rectOriginal = np.float32(perspective_bound(frame, [lineaIzq,lineaDer]))
+        # Ahora definimos los limites de la nueva imagen
+        rectPerspective = np.float32([[0,0], [height,0], [0,height], [height,height]])
+        # Calculamos la matriz de perspectiva
+        if lineaIzq == None:
+            frame_perspective = np.zeros((height,height,3))
+        else:
+            M = cv2.getPerspectiveTransform(rectOriginal,rectPerspective)
+            # Transformamos la imagen para ver como queda
+            frame_perspective = cv2.warpPerspective(frame,M, (height,height))
+
+            # #Iteramos sobre todos los puntos que encontramos para encontrar su paralela
+            for color in fallas:
+                for centro in fallas[color]:
+                    #Transformamos el centroide del
+                    centro_perspectiva = cv2.perspectiveTransform(np.array([[centro[0]]],dtype = 'float32'),M)    #Los puntos que le entran a la funcion perspectiveTransform, tienen que ser de la forma [[[x1,y1],[x2,y2, ...]]], con ESA cantidad de parentesis.
+                    # Calculamos el mismo punto en la otra linea
+                    centro_perspectiva = centro_perspectiva[0][0].copy()
+                    if centro_perspectiva[0] < height/2:
+                        punto_contrario_perspectiva = np.array([height, centro_perspectiva[1]])
+                    else:
+                        punto_contrario_perspectiva = np.array([0, centro_perspectiva[1]], dtype = 'float')
+                    # Destransformamos el punto
+                    # print "M = {}".format(M)
+                    # print "invM = {}".format(cv2.invert(M))
+                    punto_contrario = cv2.perspectiveTransform(np.array([[punto_contrario_perspectiva]],dtype = 'float32'),cv2.invert(M)[1])
+                    # Graficamos, las lineas que encontramos
+                    punto_contrario = punto_contrario[0][0].copy()
+                    cv2.line(frame,tuple(centro[0]),tuple(punto_contrario),coloresDibujo['azul'],2)
+                    # Calculamos la distancia en pixeles
+                    distPixeles = np.sqrt(np.square(centro[0][0] - punto_contrario[0]) + np.square(centro[0][1] - punto_contrario[1]))
+                    # Usamos la ecuacion de similitud triangular para sacar la distancia
+                    distCamara = largoEntreLineas*distaciaFocal/distPixeles
+                    # Ahora usamos la relacion de pitagoras para calcular la distancia de la falla al chasis
+                    distChasis = np.sqrt(np.square(distCamara) - np.square(altura_camara))
+                    # guardamos la distancia en centimetros en el diccionario de fallas
+
+                    centro[1] = distChasis
+
+            return fallas
